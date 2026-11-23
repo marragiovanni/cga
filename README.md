@@ -10,6 +10,8 @@ Everything runs locally in the browser: games, engine output and evaluations
 never leave your machine. The only network requests are for the app's own
 files (the engine worker and its `.wasm` binary).
 
+**[You can try it here!](https://cga.marra-giovanni04.workers.dev/)**
+
 ## Features
 
 - **PGN import** with headers, player names, ratings and result
