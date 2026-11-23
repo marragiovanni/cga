@@ -1,0 +1,405 @@
+/**
+ * Global theme — design tokens, page chrome and the styles for DOM that
+ * Svelte does not own (chessground's board, the promotion picker that
+ * board.ts injects imperatively). Component-specific styles live in the
+ * components themselves.
+ */
+
+/* ================================================================ tokens */
+
+:root {
+  --bg: #191a1e;
+  --bg-raised: #1f2024;
+  --panel: #232529;
+  --panel-edge: rgba(255, 255, 255, 0.07);
+  --fg: #e8e8ea;
+  --fg-strong: #ffffff;
+  --muted: #9a9aa2;
+  --accent: #7fa650;
+  --accent-hover: #8fb95f;
+  --accent-soft: rgba(127, 166, 80, 0.25);
+  --danger: #ff7a6e;
+  --radius: 10px;
+  --transition-fast: 0.15s ease;
+  --transition-med: 0.25s ease;
+  color-scheme: dark;
+}
+
+/* ---------------------------------------------------------- light theme */
+:root.light {
+  --bg: #f3f4f6;
+  --bg-raised: #ffffff;
+  --panel: #ffffff;
+  --panel-edge: rgba(0, 0, 0, 0.1);
+  --fg: #1f2937;
+  --fg-strong: #111827;
+  --muted: #6b7280;
+  --accent: #5b8c2a;
+  --accent-hover: #6ea033;
+  --accent-soft: rgba(91, 140, 42, 0.18);
+  --danger: #dc2626;
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: var(--fg);
+  background:
+    radial-gradient(1100px 480px at 50% -12%, rgba(127, 166, 80, 0.07), transparent 60%),
+    var(--bg);
+  transition: background var(--transition-med), color var(--transition-med);
+}
+
+:root.light body {
+  background:
+    radial-gradient(1100px 480px at 50% -12%, rgba(91, 140, 42, 0.06), transparent 60%),
+    var(--bg);
+}
+
+/* ================================================================ header */
+
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.7rem 1.25rem;
+  border-bottom: 1px solid var(--panel-edge);
+  background: rgba(255, 255, 255, 0.02);
+  transition: background var(--transition-med), border-color var(--transition-med);
+}
+
+:root.light header {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+header h1 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 650;
+  letter-spacing: 0.01em;
+  color: var(--fg);
+}
+
+header h1::after {
+  content: "";
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-left: 0.55rem;
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 0 0 10px rgba(127, 166, 80, 0.7);
+}
+
+/* Theme toggle button */
+.theme-toggle {
+  all: unset;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 8px;
+  font-size: 1.15rem;
+  background: transparent;
+  border: 1px solid var(--panel-edge);
+  color: var(--muted);
+  transition: all var(--transition-fast);
+  box-shadow: none;
+}
+
+.theme-toggle:hover {
+  background: rgba(127, 166, 80, 0.12);
+  color: var(--accent);
+  border-color: var(--accent-soft);
+}
+
+/* ================================================================ layout */
+
+main.layout {
+  display: grid;
+  grid-template-columns: minmax(240px, 310px) minmax(380px, 1fr) minmax(290px, 360px);
+  grid-template-rows: auto minmax(10rem, 1fr);
+  grid-template-areas:
+    "inputs board sidebar"
+    "inputs board movelist";
+  gap: 1.1rem;
+  padding: 1.1rem;
+  align-items: stretch;
+  height: calc(100dvh - 55px);
+  box-sizing: border-box;
+}
+
+/* ------------------------------------------------- tablet (≤1100px) */
+@media (max-width: 1100px) {
+  main.layout {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto auto;
+    grid-template-areas:
+      "board sidebar"
+      "board movelist"
+      "inputs inputs";
+    height: auto;
+    min-height: calc(100dvh - 55px);
+  }
+
+  #board-cell {
+    --board-w: min(100%, calc(50dvh));
+  }
+}
+
+/* ------------------------------------------------- mobile (≤640px) */
+@media (max-width: 640px) {
+  main.layout {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto auto;
+    grid-template-areas:
+      "board"
+      "sidebar"
+      "movelist"
+      "inputs";
+    gap: 0.75rem;
+    padding: 0.75rem;
+    height: auto;
+    min-height: calc(100dvh - 55px);
+  }
+
+  #board-cell {
+    --board-w: min(100%, calc(100vw - 1.5rem));
+  }
+
+  header {
+    padding: 0.5rem 0.75rem;
+  }
+
+  header h1 {
+    font-size: 0.95rem;
+  }
+}
+
+/* ================================================================ panels */
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--panel-edge);
+  border-radius: var(--radius);
+  padding: 1rem;
+  min-width: 0;
+  transition: background var(--transition-med), border-color var(--transition-med),
+    box-shadow var(--transition-med);
+  animation: panel-enter 0.3s ease-out;
+}
+
+@keyframes panel-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+/* ================================================================ inputs */
+
+textarea {
+  width: 100%;
+  min-height: 8rem;
+  background: var(--bg);
+  color: var(--fg);
+  border: 1px solid rgba(127, 127, 127, 0.25);
+  border-radius: 8px;
+  font-family: ui-monospace, 'Cascadia Code', 'Fira Code', monospace;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  padding: 0.55rem;
+  resize: vertical;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+textarea:hover { border-color: rgba(127, 127, 127, 0.4); }
+
+textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+textarea::placeholder {
+  color: var(--muted);
+  font-style: italic;
+  opacity: 0.7;
+}
+
+/* Subtle native spinners for the ELO fields (Chromium); Firefox themes
+   its own via `color-scheme: dark`. */
+.elo-field input::-webkit-outer-spin-button,
+.elo-field input::-webkit-inner-spin-button {
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.elo-field:hover input::-webkit-outer-spin-button,
+.elo-field:hover input::-webkit-inner-spin-button,
+.elo-field:focus-within input::-webkit-outer-spin-button,
+.elo-field:focus-within input::-webkit-inner-spin-button {
+  opacity: 0.55;
+}
+
+/* ============================================================== buttons */
+
+button {
+  background: linear-gradient(180deg, var(--accent-hover), var(--accent));
+  color: #111;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 1.1rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: filter var(--transition-fast), transform 0.1s, box-shadow var(--transition-fast);
+}
+
+button:hover {
+  filter: brightness(1.08);
+}
+
+button:active { transform: translateY(1px); }
+
+button:focus-visible {
+  outline: 2px solid #b7d992;
+  outline-offset: 2px;
+}
+
+button.cancel {
+  background: linear-gradient(180deg, #e8675a, #d24437);
+}
+
+:root.light button {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+:root.light button:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+}
+
+/* ================================================ board (chessground) */
+
+#board-cell {
+  grid-area: board;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+  --board-w: min(100%, calc(100dvh - 14.5rem));
+}
+
+#board {
+  padding: 0;
+  width: var(--board-w);
+  flex: none;
+  aspect-ratio: 1;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+  transition: box-shadow var(--transition-med);
+}
+
+:root.light #board {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+#board.locked { cursor: not-allowed; }
+#board.locked piece { cursor: not-allowed; }
+
+/* Promotion picker — chessground ships none, so board.ts drops this
+   over the destination square (white pov, 8×8 grid percentages). */
+.promotion {
+  position: absolute;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.promotion-piece {
+  width: 3.5rem;
+  height: 3.5rem;
+  padding: 0;
+  font-size: 2rem;
+  line-height: 1;
+  border-radius: 0;
+  background: var(--panel);
+  color: #f0f0f0;
+  border: none;
+  border-bottom: 1px solid #444;
+}
+
+.promotion-piece:last-child { border-bottom: none; }
+.promotion-piece:hover { background: var(--accent); color: #111; }
+.promotion-piece.black { color: #111; background: #c9c9cf; }
+.promotion-piece.black:hover { background: var(--accent); }
+
+/* ================================================= move list (shared) */
+
+#movelist::-webkit-scrollbar { width: 10px; }
+#movelist::-webkit-scrollbar-track { background: transparent; }
+#movelist::-webkit-scrollbar-thumb {
+  background: #4a4a52;
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+#movelist::-webkit-scrollbar-thumb:hover { background-color: var(--accent); }
+
+:root.light #movelist::-webkit-scrollbar-thumb {
+  background: #c4c4cc;
+}
+:root.light #movelist::-webkit-scrollbar-thumb:hover {
+  background-color: var(--accent);
+}
+
+/* ================================================ classifier palette */
+
+:root {
+  --label-blunder: #e05252;
+  --label-mistake: #e08e3c;
+  --label-inaccuracy: #e0c33c;
+  --label-good: #5a9bd8;
+  --label-book: #7fa650;
+  --label-best: #56b86f;
+  --label-acceptable: #9a9aa2;
+}
+
+/* ================================================ utility animations */
+
+@keyframes fade-in {
+  from { opacity: 0; }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+/* ================================================ focus-visible global */
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ================================================ selection */
+
+::selection {
+  background: var(--accent-soft);
+  color: var(--fg-strong);
+}

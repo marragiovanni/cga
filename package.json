@@ -1,0 +1,28 @@
+{
+  "name": "cga",
+  "version": "0.1.0",
+  "description": "Chess game analysis with Stockfish and natural-language move labels",
+  "type": "module",
+  "license": "GPL-3.0-or-later",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "book": "node scripts/build-book.mjs",
+    "build": "node scripts/build-book.mjs && node scripts/copy-engine.mjs && tsc --noEmit && vite build",
+    "build:test": "node scripts/copy-engine.mjs && vite build --config vite.config.test.ts",
+    "dev": "node scripts/copy-engine.mjs && vite",
+    "test": "tsc --noEmit && node --test test/*.test.ts"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^6.2.4",
+    "@types/node": "^26.6.6",
+    "playwright": "^1.65.0",
+    "svelte": "^5.57.3",
+    "typescript": "^7.0.2",
+    "vite": "^7.3.8"
+  },
+  "dependencies": {
+    "@lichess-org/chessground": "^10.1.1",
+    "chess.js": "^1.4.0",
+    "stockfish": "^19.0.1"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "engine": {
+    "flavor": "lite-single",
+    "depth": 14,
+    "multipv": 2,
+    "workers": 4
+  },
+  "book": {
+    "maxPly": 12
+  },
+  "winProb": {
+    "k": 0.004
+  },
+  "eloScaling": {
+    "referenceElo": 1500,
+    "slope": -0.0004,
+    "minScale": 0.6,
+    "maxScale": 1.6
+  },
+  "labels": {
+    "blunderCpLoss": 300,
+    "mistakeCpLoss": 150,
+    "inaccuracyCpLoss": 70,
+    "goodCpLoss": 25
+  },
+  "accuracy": {
+    "k": 0.004
+  }
+}

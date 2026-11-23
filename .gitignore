@@ -1,0 +1,32 @@
+# dependencies
+node_modules/
+
+# build output
+dist/
+dist-test/
+
+# environment files
+.env
+.env.*
+!.env.example
+
+# secrets and certificates
+*.pem
+*.key
+
+# logs
+*.log
+npm-debug.log*
+
+# OS metadata
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# editor / IDE
+.vscode/
+.idea/
+*.swp
+
+# local scratch files
+session_data.txt
