@@ -736,7 +736,7 @@
     {cursor}
     version={labelsVersion}
     classify={classifyNode}
-    result={isMainPath(path) ? (game?.result ?? null) : null}
+    result={pgnSource && isMainPath(path) && game?.result !== "*" ? game.result : null}
     onJump={jumpTo}
   />
 </main>
