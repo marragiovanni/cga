@@ -247,7 +247,7 @@
       {/each}
     </div>
 
-    {#if props.result && props.result !== "*" && props.path.length > 0}
+    {#if props.result && props.result !== "*" && props.result !== "-" && props.path.length > 0}
       <div class="result-row">
         <span class="result">{props.result}</span>
       </div>

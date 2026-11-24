@@ -368,11 +368,11 @@
           Round: "",
           White: "White",
           Black: "Black",
-          Result: "*",
+          Result: "-",
         },
         white: "White",
         black: "Black",
-        result: "*",
+        result: "-",
         whiteElo: eloWhite,
         blackElo: eloBlack,
         moves: [],
@@ -736,7 +736,7 @@
     {cursor}
     version={labelsVersion}
     classify={classifyNode}
-    result={pgnSource && isMainPath(path) && game?.result !== "*" ? game.result : null}
+    result={pgnSource && isMainPath(path) && game?.result !== "*" && game?.result !== "-" ? game.result : null}
     onJump={jumpTo}
   />
 </main>
