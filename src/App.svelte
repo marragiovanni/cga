@@ -728,7 +728,13 @@
     onFlip={toggleOrientation}
   />
 
-  <Sidebar {game} opening={openingInfo} engineInfo={engineInfo} evalCp={evalCp} />
+  <Sidebar
+    {game}
+    opening={openingInfo}
+    engineInfo={engineInfo}
+    evalCp={evalCp}
+    hasMoved={cursor > 0}
+  />
 
   <MoveList
     {tree}

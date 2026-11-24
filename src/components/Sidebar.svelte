@@ -21,9 +21,10 @@
     engineInfo: EngineInfoView | null;
     /** White-relative evaluation in centipawns (null → neutral 50%). */
     evalCp: number | null;
+    hasMoved?: boolean;
   }
 
-  let { game, opening, engineInfo, evalCp }: Props = $props();
+  let { game, opening, engineInfo, evalCp, hasMoved = false }: Props = $props();
 
   const fraction = $derived(evalBarFraction(evalCp));
   const fractionPct = $derived(Math.round(fraction * 100));
@@ -49,9 +50,10 @@
       <span class="eco-code">{opening.eco}</span>
       <span class="opening-name">{opening.name}</span>
     </div>
-  {:else}
-    <div class="opening-badge empty">
-      <span id="opening">–</span>
+  {:else if hasMoved}
+    <div class="opening-badge" title="Unknown Opening">
+      <span class="eco-code">?</span>
+      <span class="opening-name" id="opening">Unknown Opening</span>
     </div>
   {/if}
 
@@ -155,11 +157,6 @@
     border-radius: 8px;
     overflow: hidden;
     transition: all 0.2s ease;
-  }
-
-  .opening-badge.empty {
-    background: transparent;
-    border-color: transparent;
   }
 
   .eco-code {
