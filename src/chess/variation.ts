@@ -172,7 +172,7 @@ export function playMove(parent: VariationNode, uci: string): VariationNode | nu
       fenBefore: played.before,
       fenAfter: played.after,
     },
-    main: false,
+    main: parent.children.length === 0,
     parent,
     children: [],
   };

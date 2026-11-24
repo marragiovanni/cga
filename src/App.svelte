@@ -218,6 +218,9 @@
   /** Status line for whatever line is on the board right now. */
   const statusForView = (): string => {
     if (!game || !tree) return IDLE_STATUS;
+    // Manual exploration has no "game" to summarize; hide the status
+    // bar so "Variation · X moves" never leaks into the left panel.
+    if (!pgnSource) return IDLE_STATUS;
     if (!isMainPath(path)) {
       // Accuracy only when *every* move of the line is classified.
       const cls = classification;
