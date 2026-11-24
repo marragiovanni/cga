@@ -27,6 +27,7 @@ files (the engine worker and its `.wasm` binary).
   instant
 - **Fork navigation**: the imported game is always the main line, alternatives
   render as branches, and the board UI follows the selected line
+- **Phone-friendly layout**: board-first view with a slide-up PGN import sheet
 
 ## Requirements
 
@@ -71,6 +72,7 @@ npm run build:test                        # browser checks → dist-test/
 npx playwright install firefox            # once
 node scripts/run-checks.mjs               # runs every browser check
 node scripts/run-checks.mjs view          # a single page
+node scripts/run-checks.mjs --mobile      # phone-sized viewport (390×844)
 ```
 
 Production builds deliberately exclude the Playwright check pages.

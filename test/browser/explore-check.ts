@@ -64,8 +64,8 @@ function $<T extends HTMLElement>(id: string): T {
 }
 
 const statusText = (): string => $("status").textContent ?? "";
-// Button label, excluding the decorative icon span (textContent is
-// "▶ Analyze" / "⏹ Cancel…" because of the aria-hidden glyph).
+// Button label: only the text nodes, since the decorative SVG icon is
+// aria-hidden and carries no action text.
 const buttonText = (): string =>
   [...$<HTMLButtonElement>("analyze-btn").childNodes]
     .filter((n) => n.nodeType === Node.TEXT_NODE)
@@ -232,15 +232,15 @@ async function check(): Promise<void> {
   expect(!progressHidden(), "progress bar shown while running");
 
   const running = await waitFor(
-    () => /^analyzing… (\d+)\/(\d+)$/.exec(statusText()),
+    () => /^Analyzing… (\d+)\/(\d+)$/.exec(statusText()),
     15_000,
     "run progress",
   );
   expect(Number(running[2]) === 26, `total is 26 searchable positions (got ${running[2]})`);
 
-  await waitFor(() => statusText().startsWith("analysis done"), 60_000, "run to finish");
+  await waitFor(() => statusText().startsWith("Analysis complete"), 60_000, "run to finish");
   expect(
-    /^analysis done · White \d+% · Black \d+%$/.test(statusText()),
+    /^Analysis complete · White \d+% · Black \d+%$/.test(statusText()),
     `done status carries both accuracies (got "${statusText()}")`,
   );
   expect(buttonText() === "Analyze", "button back to Analyze when done");
@@ -264,7 +264,7 @@ async function check(): Promise<void> {
 
   await boardMove("c7", "c5"); // the Sicilian, instead of the game's 1...e5
   await waitFor(
-    () => /^variation · 2 moves · White \d+% · Black \d+%$/.test(statusText()),
+    () => /^Variation · 2 moves · White \d+% · Black \d+%$/.test(statusText()),
     5_000,
     "book fork is classified instantly (no live search)",
   );
@@ -319,7 +319,7 @@ async function check(): Promise<void> {
   expect(activePly() === "2", "at the second forking point");
 
   await boardMove("h2", "h3");
-  expect(statusText() === "analyzing move…", "live status for the off-book fork");
+  expect(statusText() === "Analyzing move…", "live status for the off-book fork");
   const ply3Chip = varChips().find((el) => el.dataset.ply === "3");
   expect(ply3Chip !== undefined, "the h3 fork move chip rendered as a variation");
   expect(
@@ -330,7 +330,7 @@ async function check(): Promise<void> {
   expect(varChips().length > varsBefore, "the move list grew with the new branch");
 
   await waitFor(
-    () => /^variation · 3 moves · White \d+% · Black \d+%$/.test(statusText()),
+    () => /^Variation · 3 moves · White \d+% · Black \d+%$/.test(statusText()),
     30_000,
     "second variation status",
   );
@@ -350,9 +350,9 @@ async function check(): Promise<void> {
   expect(buttonText() === "Cancel…", "run starts while a variation is viewed");
   expect(boardLocked(), "board locks for the viewed-path run");
 
-  await waitFor(() => statusText().startsWith("analysis done"), 30_000, "viewed-path run");
+  await waitFor(() => statusText().startsWith("Analysis complete"), 30_000, "viewed-path run");
   expect(
-    /^analysis done · White \d+% · Black \d+%$/.test(statusText()),
+    /^Analysis complete · White \d+% · Black \d+%$/.test(statusText()),
     `done status carries accuracies (got "${statusText()}")`,
   );
   expect(buttonText() === "Analyze", "button back to Analyze");
@@ -396,7 +396,7 @@ async function check(): Promise<void> {
   let engineReran = false;
   const eloDeadline = Date.now() + 700;
   while (Date.now() < eloDeadline) {
-    if (buttonText() === "Cancel…" || /^analyzing…/.test(statusText())) engineReran = true;
+    if (buttonText() === "Cancel…" || /^Analyzing…/.test(statusText())) engineReran = true;
     await sleep(50);
   }
   expect(!engineReran, "ELO change never started an engine run");
@@ -430,7 +430,7 @@ async function check(): Promise<void> {
   expect(!boardLocked(), "board never locks for a book-only analysis");
   expect(progressHidden(), "no progress bar without a run");
   expect(
-    /^analysis done · White \d+% · Black \d+%$/.test(statusText()),
+    /^Analysis complete · White \d+% · Black \d+%$/.test(statusText()),
     `instant done status (got "${statusText()}")`,
   );
   expect(

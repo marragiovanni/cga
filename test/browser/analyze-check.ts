@@ -73,8 +73,8 @@ const openingText = (): string => {
   const name = badge.querySelector(".opening-name")?.textContent ?? "";
   return `${eco} ${name}`.trim();
 };
-// Button label, excluding the decorative icon span (textContent is
-// "▶ Analyze" / "⏹ Cancel…" because of the aria-hidden glyph).
+// Button label: only the text nodes, since the decorative SVG icon is
+// aria-hidden and carries no action text.
 const buttonText = (): string =>
   [...$<HTMLButtonElement>("analyze-btn").childNodes]
     .filter((n) => n.nodeType === Node.TEXT_NODE)
@@ -208,7 +208,7 @@ async function check(): Promise<void> {
   expect(!progressHidden(), "progress bar shown while running");
 
   const running = await waitFor(() => {
-    const m = /^analyzing… (\d+)\/(\d+)$/.exec(statusText());
+    const m = /^Analyzing… (\d+)\/(\d+)$/.exec(statusText());
     return m !== null && Number(m[1]) >= 1 ? { done: Number(m[1]), total: Number(m[2]) } : null;
   }, 10_000, "at least one analyzed position");
   expect(running.total === TOTAL, `total is ${TOTAL} positions (got ${running.total})`);
@@ -222,15 +222,15 @@ async function check(): Promise<void> {
   log("— phase C: cancel mid-run, keep partial work —");
   // Wait until at least two positions are done so something is cached.
   await waitFor(() => {
-    const m = /^analyzing… (\d+)\//.exec(statusText());
+    const m = /^Analyzing… (\d+)\//.exec(statusText());
     return m !== null && Number(m[1]) >= 2;
   }, 10_000, "at least 2 analyzed positions");
   $("analyze-btn").click();
 
   const cancelled = await waitFor(
-    () => /^analysis cancelled · (\d+)\/(\d+) positions$/.exec(statusText()),
+    () => /^Analysis cancelled · (\d+)\/(\d+) positions$/.exec(statusText()),
     10_000,
-    "an `analysis cancelled` status line",
+    "an `Analysis cancelled` status line",
   );
   const cancelledDone = Number(cancelled[1]);
   expect(cancelledDone > 0 && cancelledDone < TOTAL, `partial run (${cancelledDone}/${TOTAL})`);
@@ -248,10 +248,10 @@ async function check(): Promise<void> {
   await sleep(0);
   expect(buttonText() === "Cancel…", `resume flips button to "Cancel…" (got "${buttonText()}")`);
 
-  await waitFor(() => statusText().startsWith("analysis done"), 60_000, "analysis to finish");
+  await waitFor(() => statusText().startsWith("Analysis complete"), 60_000, "analysis to finish");
   const doneStatus = statusText();
   expect(
-    /^analysis done · White \d+% · Black \d+%$/.exec(doneStatus) !== null,
+    /^Analysis complete · White \d+% · Black \d+%$/.exec(doneStatus) !== null,
     `status carries both accuracies (got "${doneStatus}")`,
   );
   log(`     status: ${doneStatus}`);
@@ -338,7 +338,7 @@ async function check(): Promise<void> {
   let engineReran = false;
   const eloDeadline = Date.now() + 700;
   while (Date.now() < eloDeadline) {
-    if (buttonText() === "Cancel…" || /^analyzing…/.test(statusText())) engineReran = true;
+    if (buttonText() === "Cancel…" || /^Analyzing…/.test(statusText())) engineReran = true;
     await sleep(50);
   }
   expect(!engineReran, "ELO change never started an engine run");

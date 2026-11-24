@@ -1,7 +1,7 @@
 <script lang="ts">
   /** Inputs — PGN textarea, ELO fields, analyze button, progress bar,
    *  match accuracy card, and status line. */
-  import { ClipboardPaste, Play, Square } from "@lucide/svelte";
+  import { ClipboardPaste, Play, Square, X } from "@lucide/svelte";
 
   interface Props {
     pgn?: string;
@@ -13,10 +13,12 @@
     statusText: string;
     statusIsError: boolean;
     statusIsIdle: boolean;
+    mobileOpen?: boolean;
     whiteAccuracy?: number | null;
     blackAccuracy?: number | null;
     onPgnInput: () => void;
     onAnalyze: () => void;
+    onCloseMobileImport?: () => void;
   }
 
   let {
@@ -29,10 +31,12 @@
     statusText,
     statusIsError,
     statusIsIdle,
+    mobileOpen = false,
     whiteAccuracy = null,
     blackAccuracy = null,
     onPgnInput,
     onAnalyze,
+    onCloseMobileImport,
   }: Props = $props();
 
   const accuracyLevel = (val: number | null): string => {
@@ -44,12 +48,20 @@
   };
 </script>
 
-<section id="inputs" class="panel">
+<section id="inputs" class="panel" class:mobile-open={mobileOpen}>
   <div class="panel-header">
     <label class="field-label" for="pgn">
       <span class="label-icon" aria-hidden="true"><ClipboardPaste size={15} strokeWidth={2} /></span>
       PGN Game Import
     </label>
+    {#if onCloseMobileImport}
+      <button
+        class="mobile-sheet-close"
+        type="button"
+        aria-label="Close PGN import"
+        onclick={onCloseMobileImport}
+      ><X size={18} aria-hidden="true" /></button>
+    {/if}
   </div>
 
   <textarea
@@ -115,6 +127,10 @@
     overflow-y: auto;
     scrollbar-width: thin;
     scrollbar-color: #3f404a transparent;
+  }
+
+  .mobile-sheet-close {
+    display: none;
   }
 
   .panel-header {
@@ -305,23 +321,69 @@
 
   #status {
     margin: 0.75rem 0 0;
-    font-size: 0.82rem;
-    color: var(--fg);
-    line-height: 1.4;
+    padding: 0.6rem 0.75rem;
+    font-size: 0.84rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    color: var(--muted);
+    line-height: 1.35;
     word-break: break-word;
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
-    padding-top: 0.65rem;
+    background: rgba(127, 166, 80, 0.08);
+    border: 1px solid rgba(127, 166, 80, 0.18);
+    border-radius: 8px;
   }
 
   :global(:root.light) #status {
-    border-top-color: rgba(0, 0, 0, 0.06);
+    background: rgba(91, 140, 42, 0.06);
+    border-color: rgba(91, 140, 42, 0.18);
   }
 
   #status.error {
     color: var(--danger);
+    background: rgba(239, 68, 68, 0.08);
+    border-color: rgba(239, 68, 68, 0.25);
   }
 
   @media (max-width: 640px) {
+    #inputs {
+      position: fixed;
+      z-index: 20;
+      right: 0.75rem;
+      bottom: 0.75rem;
+      left: 0.75rem;
+      max-height: min(82dvh, 44rem);
+      overflow-y: auto;
+      transform: translateY(calc(100% + 1.5rem));
+      visibility: hidden;
+      pointer-events: none;
+      transition: transform var(--transition-med), visibility 0s linear var(--transition-med);
+      box-shadow: 0 -12px 32px rgba(0, 0, 0, 0.35);
+    }
+
+    #inputs.mobile-open {
+      transform: translateY(0);
+      visibility: visible;
+      pointer-events: auto;
+      transition-delay: 0s;
+    }
+
+    .mobile-sheet-close {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 2rem;
+      height: 2rem;
+      padding: 0;
+      color: var(--muted);
+      background: transparent;
+      border: 1px solid var(--panel-edge);
+      box-shadow: none;
+    }
+
+    #status {
+      display: none;
+    }
+
     .elo-row {
       grid-template-columns: 1fr;
       gap: 0.5rem;

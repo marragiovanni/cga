@@ -52,7 +52,7 @@
   import { createAnalysisController } from "./ui/analysis.ts";
   import { openEvalStore } from "./ui/evalcache.ts";
   import { formatScore } from "./ui/score.ts";
-  import { Moon, Sun } from "@lucide/svelte";
+  import { Import, Moon, Sun } from "@lucide/svelte";
   import labels from "./config/labels.json" with { type: "json" };
   import BoardCell from "./components/BoardCell.svelte";
   import InputsPanel from "./components/InputsPanel.svelte";
@@ -61,7 +61,7 @@
 
   /** Plies of the principal variation shown in the sidebar. */
   const PV_MOVES = 6;
-  const IDLE_STATUS = "paste a PGN here…";
+  const IDLE_STATUS = "Paste a PGN here…";
   /** Delay after the last keystroke before the PGN is parsed. */
   const PGN_DEBOUNCE_MS = 300;
 
@@ -121,6 +121,7 @@
   let pgn = $state("");
   let eloWhite = $state<number | null>(1500);
   let eloBlack = $state<number | null>(1500);
+  let mobileImportOpen = $state(false);
 
   /** Which side sits at the bottom of the board (flip to analyze from
    *  the other player's point of view, e.g. as Black). Session-only. */
@@ -214,7 +215,7 @@
       // Accuracy only when *every* move of the line is classified.
       const cls = classification;
       const suffix = cls && cls.moves.every((label) => label !== null) ? accuracySuffix() : "";
-      return `variation · ${path.length} moves${suffix}`;
+      return `Variation · ${path.length} moves${suffix}`;
     }
     return gameStatus();
   };
@@ -322,7 +323,7 @@
   const liveAnalyze = (positions: string[]): void => {
     const startedEpoch = epoch;
     livePending++;
-    if (!analysisRunning) setStatus("analyzing move…");
+    if (!analysisRunning) setStatus("Analyzing move…");
     void analysis
       .analyzeNow(positions)
       .catch(() => {
@@ -415,7 +416,7 @@
       // Book-only line (or a lone terminal position): every label is
       // already available — no run, no progress bar, just done.
       labelsVersion++;
-      setStatus(`analysis done${accuracySuffix()}`);
+      setStatus(`Analysis complete${accuracySuffix()}`);
       return;
     }
     analysisRunning = true;
@@ -428,19 +429,19 @@
         // progressively while the run continues.
         labelsVersion++;
         progressPct = total > 0 ? Number(((done / total) * 100).toFixed(1)) : 0;
-        setStatus(`analyzing… ${done}/${total}`);
+        setStatus(`Analyzing… ${done}/${total}`);
       });
       if (epoch !== startedEpoch) return; // PGN changed while running
       labelsVersion++;
       setStatus(
         outcome.aborted
-          ? `analysis cancelled · ${outcome.done}/${outcome.total} positions`
-          : `analysis done${accuracySuffix()}`,
+          ? `Analysis cancelled · ${outcome.done}/${outcome.total} positions`
+          : `Analysis complete${accuracySuffix()}`,
       );
     } catch (error) {
       if (epoch === startedEpoch) {
         const detail = error instanceof Error ? error.message : String(error);
-        setStatus(`analysis failed — ${detail}`, true);
+        setStatus(`Analysis failed — ${detail}`, true);
       }
     } finally {
       if (epoch === startedEpoch) {
@@ -508,7 +509,7 @@
     } catch (error) {
       // Keep the previous game on screen; just report the problem.
       const detail = error instanceof Error ? error.message : String(error);
-      setStatus(`invalid PGN — ${detail}`, true);
+      setStatus(`Invalid PGN — ${detail}`, true);
     }
   };
 
@@ -596,6 +597,34 @@
     return () => document.removeEventListener("keydown", onKey);
   });
 
+  // Mobile PGN sheet: lock the page behind it, close on Escape, and move
+  // focus into the sheet while open (back to the toggle once it closes).
+  $effect(() => {
+    if (!mobileImportOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    const toggle = document.getElementById("mobile-import-toggle");
+    const mobileQuery = window.matchMedia("(max-width: 640px)");
+    const onViewportChange = (): void => {
+      if (!mobileQuery.matches) mobileImportOpen = false;
+    };
+    document.body.style.overflow = "hidden";
+    const onKeydown = (event: KeyboardEvent): void => {
+      if (event.key === "Escape") mobileImportOpen = false;
+    };
+    document.addEventListener("keydown", onKeydown);
+    mobileQuery.addEventListener("change", onViewportChange);
+    const frame = requestAnimationFrame(() => {
+      document.querySelector<HTMLTextAreaElement>("#inputs #pgn")?.focus({ preventScroll: true });
+    });
+    return () => {
+      cancelAnimationFrame(frame);
+      document.removeEventListener("keydown", onKeydown);
+      mobileQuery.removeEventListener("change", onViewportChange);
+      document.body.style.overflow = previousOverflow;
+      toggle?.focus({ preventScroll: true });
+    };
+  });
+
   // Leaving the page mid-run: abort and tear the worker down.
   $effect(() => {
     const onUnload = (): void => analysis.dispose();
@@ -606,20 +635,42 @@
 
 <header>
   <h1>CGA</h1>
-  <button
-    class="theme-toggle"
-    type="button"
-    title={darkMode ? "Switch to light theme" : "Switch to dark theme"}
-    onclick={toggleTheme}
-    aria-label="Toggle theme"
-  >
-    {#if darkMode}
-      <Sun size={18} aria-hidden="true" />
-    {:else}
-      <Moon size={18} aria-hidden="true" />
-    {/if}
-  </button>
+  <div class="header-actions">
+    <button
+      class="mobile-import-toggle"
+      id="mobile-import-toggle"
+      type="button"
+      onclick={() => (mobileImportOpen = true)}
+      aria-controls="inputs"
+      aria-expanded={mobileImportOpen}
+    >
+      <Import size={16} aria-hidden="true" />
+      Import PGN
+    </button>
+    <button
+      class="theme-toggle"
+      type="button"
+      title={darkMode ? "Switch to light theme" : "Switch to dark theme"}
+      onclick={toggleTheme}
+      aria-label="Toggle theme"
+    >
+      {#if darkMode}
+        <Sun size={18} aria-hidden="true" />
+      {:else}
+        <Moon size={18} aria-hidden="true" />
+      {/if}
+    </button>
+  </div>
 </header>
+
+{#if mobileImportOpen}
+  <button
+    class="mobile-sheet-backdrop"
+    type="button"
+    aria-label="Close PGN import"
+    onclick={() => (mobileImportOpen = false)}
+  ></button>
+{/if}
 
 <main class="layout">
   <InputsPanel
@@ -632,10 +683,16 @@
     {statusText}
     {statusIsError}
     statusIsIdle={statusText === IDLE_STATUS}
+    mobileOpen={mobileImportOpen}
     whiteAccuracy={classification?.whiteAccuracy ?? null}
     blackAccuracy={classification?.blackAccuracy ?? null}
     onPgnInput={onPgnInput}
-    onAnalyze={onAnalyze}
+    onAnalyze={() => {
+      const startsAnalysis = !analysisRunning;
+      onAnalyze();
+      if (startsAnalysis) mobileImportOpen = false;
+    }}
+    onCloseMobileImport={() => (mobileImportOpen = false)}
   />
 
   <BoardCell
@@ -650,6 +707,9 @@
     moveNo={shownNode ? Math.ceil(shownNode.move.ply / 2) : null}
     isWhite={shownNode ? shownNode.move.ply % 2 === 1 : true}
     cpLoss={moveLabel?.cpLoss ?? null}
+    {statusText}
+    {statusIsError}
+    statusIsIdle={statusText === IDLE_STATUS}
     onMove={handleMove}
     onNav={onNav}
     onFlip={toggleOrientation}

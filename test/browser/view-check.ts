@@ -131,7 +131,7 @@ async function check(): Promise<void> {
   await pastePgn(OPERA_PGN);
   const status = document.getElementById("status")?.textContent ?? "";
   expect(status.includes("Morphy, Paul") && status.includes("1-0"), `status shows game summary ("${status}")`);
-  expect(!status.startsWith("invalid PGN"), "no parse error for a valid PGN");
+  expect(!status.startsWith("Invalid PGN"), "no parse error for a valid PGN");
   expect(document.getElementById("game-white")?.textContent === "Morphy, Paul", "sidebar shows White");
   expect(document.getElementById("game-result")?.textContent === "1-0", "sidebar shows result");
   expect(document.querySelectorAll("#movelist .ply").length === last, `move list has ${last} plies`);
@@ -140,6 +140,44 @@ async function check(): Promise<void> {
     document.querySelector('#movelist .ply[data-ply="1"]')?.textContent === "e4",
     "first ply is e4",
   );
+
+  if (window.matchMedia("(max-width: 640px)").matches) {
+    const importToggle = document.getElementById("mobile-import-toggle") as HTMLButtonElement | null;
+    const inputs = document.getElementById("inputs");
+    expect(importToggle !== null, "mobile PGN import action is available");
+    importToggle?.click();
+    await sleep(50);
+    expect(inputs?.classList.contains("mobile-open") === true, "mobile PGN sheet opens");
+    expect(document.body.style.overflow === "hidden", "page scroll locks behind the sheet");
+    press("Escape");
+    await sleep(50);
+    expect(inputs?.classList.contains("mobile-open") === false, "Escape closes the mobile PGN sheet");
+    expect(document.body.style.overflow === "", "page scroll restored when the sheet closes");
+
+    importToggle?.click();
+    await sleep(50);
+    (inputs?.querySelector(".mobile-sheet-close") as HTMLButtonElement | null)?.click();
+    await sleep(50);
+    expect(inputs?.classList.contains("mobile-open") === false, "mobile PGN sheet closes");
+
+    const sidebarStatus = document.getElementById("status");
+    const mobileStatus = document.getElementById("mobile-status");
+    expect(sidebarStatus !== null && mobileStatus !== null, "status is rendered in both slots");
+    expect(getComputedStyle(sidebarStatus!).display === "none", "sidebar status is hidden on mobile");
+    expect(getComputedStyle(mobileStatus!).display !== "none", "mobile status is visible");
+    expect(mobileStatus?.textContent === status, "mobile status mirrors the sidebar status");
+
+    window.scrollTo(0, 160);
+    const scrollBeforeNavigation = window.scrollY;
+    (document.getElementById("nav-next") as HTMLButtonElement | null)?.click();
+    await sleep(50);
+    expect(
+      Math.abs(window.scrollY - scrollBeforeNavigation) <= 1,
+      "mobile navigation preserves the page scroll position",
+    );
+    (document.getElementById("nav-first") as HTMLButtonElement | null)?.click();
+    await sleep(50);
+  }
 
   // 3. Start position on the board, nothing highlighted.
   expectBoard(0, "start");
@@ -221,7 +259,7 @@ async function check(): Promise<void> {
   // 9. Invalid PGN: red status, previous game stays on screen.
   await pastePgn("this is not a chess game at all");
   const errStatus = document.getElementById("status")?.textContent ?? "";
-  expect(errStatus.startsWith("invalid PGN"), `invalid PGN reported ("${errStatus}")`);
+  expect(errStatus.startsWith("Invalid PGN"), `invalid PGN reported ("${errStatus}")`);
   expect(
     document.getElementById("status")?.classList.contains("error") === true,
     "status line flagged as error",

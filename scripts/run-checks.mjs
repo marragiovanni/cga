@@ -4,6 +4,7 @@
  *
  *   node scripts/run-checks.mjs              all pages
  *   node scripts/run-checks.mjs view.html    subset (names without .html ok)
+ *   node scripts/run-checks.mjs --mobile view.html  phone-sized viewport
  *
  * Requires the check build to exist (`npm run build:test`) and `playwright`
  * with its firefox build installed (`npx playwright install firefox`).
@@ -38,7 +39,8 @@ const server = createServer(async (req, res) => {
 });
 await new Promise((resolve) => server.listen(PORT, resolve));
 
-let pages = process.argv.slice(2).map((p) => p.replace(/\.html$/, ""));
+const mobile = process.argv.includes("--mobile");
+let pages = process.argv.slice(2).filter((p) => p !== "--mobile").map((p) => p.replace(/\.html$/, ""));
 pages = pages.map((p) => (p.startsWith("test/") ? p : `test/${p}`));
 if (pages.length === 0) {
   pages = ["test/view", "test/engine", "test/analyze", "test/explore"];
@@ -48,7 +50,9 @@ const browser = await firefox.launch();
 let failed = false;
 
 for (const page of pages) {
-  const context = await browser.newContext();
+  const context = await browser.newContext(
+    mobile ? { viewport: { width: 390, height: 844 }, hasTouch: true } : {},
+  );
   const tab = await context.newPage();
   const errors = [];
   tab.on("pageerror", (error) => errors.push(String(error)));

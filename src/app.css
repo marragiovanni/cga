@@ -72,6 +72,17 @@ header {
   transition: background var(--transition-med), border-color var(--transition-med);
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.mobile-import-toggle,
+.mobile-sheet-backdrop {
+  display: none;
+}
+
 :root.light header {
   background: rgba(0, 0, 0, 0.02);
 }
@@ -179,6 +190,30 @@ main.layout {
 
   header h1 {
     font-size: 0.95rem;
+  }
+
+  .mobile-import-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.45rem 0.65rem;
+    font-size: 0.76rem;
+    color: var(--fg);
+    background: var(--panel);
+    border: 1px solid var(--panel-edge);
+    box-shadow: none;
+  }
+
+  .mobile-sheet-backdrop {
+    display: block;
+    position: fixed;
+    z-index: 19;
+    inset: 0;
+    padding: 0;
+    background: rgba(0, 0, 0, 0.52);
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
   }
 }
 
