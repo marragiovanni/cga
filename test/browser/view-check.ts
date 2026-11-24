@@ -345,6 +345,57 @@ async function check(): Promise<void> {
   await sleep(100);
   expect(boardEl.className.includes("orientation-white"), "\"f\" flips back to White");
 
+  // 13. Light theme: text stays readable on white panels and the
+  // unfilled side of the eval bar stays dark.
+  const themeToggle = document.querySelector<HTMLButtonElement>(".theme-toggle");
+  const wasLight = document.documentElement.classList.contains("light");
+  if (!wasLight) {
+    themeToggle?.click();
+    await sleep(80);
+  }
+  expect(document.documentElement.classList.contains("light"), "theme toggle switches to light mode");
+
+  const contrastRatio = (fg: string, bg: string): number => {
+    const parse = (c: string): number[] =>
+      (c.match(/[\d.]+/g) ?? ["0", "0", "0"]).slice(0, 3).map(Number);
+    const lum = (rgb: number[]): number => {
+      const [r = 0, g = 0, b = 0] = rgb.map((v) => {
+        const s = v / 255;
+        return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+      });
+      return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    };
+    const [l1 = 0, l2 = 0] = [lum(parse(fg)), lum(parse(bg))].sort((a, b) => b - a);
+    return (l1 + 0.05) / (l2 + 0.05);
+  };
+
+  document.getElementById("nav-first")?.click();
+  await sleep(50);
+  document.getElementById("nav-next")?.click();
+  await sleep(80);
+  const lightCard = document.querySelector<HTMLElement>("#board-cell .eval-card");
+  const lightName = document.querySelector<HTMLElement>("#board-cell .move-name");
+  if (lightCard && lightName) {
+    const ratio = contrastRatio(
+      getComputedStyle(lightName).color,
+      getComputedStyle(lightCard).backgroundColor,
+    );
+    expect(ratio >= 4.5, `light: move name readable (contrast ${ratio.toFixed(2)})`);
+  } else {
+    expect(false, "light: move label card is present");
+  }
+  const evalTrack = getComputedStyle(document.getElementById("eval-bar")!).backgroundImage;
+  expect(
+    /rgb\(20, 20, 24\)/.test(evalTrack),
+    `light: eval bar unfilled side stays dark (got ${evalTrack})`,
+  );
+
+  if (!wasLight) {
+    themeToggle?.click();
+    await sleep(80);
+    try { localStorage.setItem("cma-theme", "dark"); } catch { /* quota */ }
+  }
+
   if (failures.length === 0) {
     log(`\nPASS — ${passed} assertions, game reconstruction UI verified`);
   } else {

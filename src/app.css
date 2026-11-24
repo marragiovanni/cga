@@ -378,6 +378,10 @@ button.cancel {
 
 .promotion-piece:last-child { border-bottom: none; }
 .promotion-piece:hover { background: var(--accent); color: #111; }
+
+/* White-piece glyphs would be invisible on the light panel. */
+:root.light .promotion-piece { color: var(--fg-strong); }
+
 .promotion-piece.black { color: #111; background: #c9c9cf; }
 .promotion-piece.black:hover { background: var(--accent); }
 

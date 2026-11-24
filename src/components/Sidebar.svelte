@@ -218,8 +218,9 @@
     box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.6);
   }
 
+  /* The unfilled side of the bar is Black's share, so it must stay dark
+     in light mode too — only the chrome around it gets lighter. */
   :global(:root.light) #eval-bar {
-    background: linear-gradient(180deg, #d4d4d8, #e4e4e8);
     border-color: rgba(0, 0, 0, 0.12);
     box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
   }
@@ -268,6 +269,11 @@
 
   #eval-pct.white-advantage { color: #f2f2f5; }
   #eval-pct.black-advantage { color: #9a9aa2; }
+
+  /* On the light page the pill background is light, so the advantage
+     colours above would be invisible; use readable dark text instead. */
+  :global(:root.light) #eval-pct.white-advantage { color: var(--fg-strong); }
+  :global(:root.light) #eval-pct.black-advantage { color: #4b5563; }
 
   :global(:root.light) #eval-pct {
     border-color: rgba(0, 0, 0, 0.1);

@@ -171,7 +171,7 @@
   .move-name {
     font-weight: 750;
     font-size: 1.05rem;
-    color: #ffffff;
+    color: var(--fg-strong);
     letter-spacing: 0.01em;
   }
 
@@ -201,10 +201,14 @@
   .loss-metric {
     font-family: ui-monospace, monospace;
     font-weight: 600;
-    color: #e5e5eb;
+    color: var(--fg);
     background: rgba(0, 0, 0, 0.25);
     padding: 0.05rem 0.4rem;
     border-radius: 4px;
+  }
+
+  :global(:root.light) .loss-metric {
+    background: rgba(0, 0, 0, 0.06);
   }
 
   /* Specific theme accents for labels */
@@ -316,6 +320,11 @@
     background: rgba(35, 37, 41, 0.6);
   }
 
+  :global(:root.light) .eval-card.idle {
+    opacity: 1;
+    background: var(--bg);
+  }
+
   .idle-icon {
     display: flex;
     opacity: 0.7;
@@ -324,6 +333,10 @@
   .idle-text {
     font-size: 0.85rem;
     color: var(--muted);
+  }
+
+  :global(:root.light) .eval-card.idle .idle-text {
+    color: #4b5563;
   }
 
   @keyframes card-pulse {

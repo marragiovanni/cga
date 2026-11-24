@@ -129,6 +129,10 @@
     scrollbar-color: #3f404a transparent;
   }
 
+  :global(:root.light) #inputs {
+    scrollbar-color: #c4c4cc transparent;
+  }
+
   .mobile-sheet-close {
     display: none;
   }
@@ -308,6 +312,11 @@
   .accuracy-val.good { color: var(--accent); }
   .accuracy-val.fair { color: #eab308; }
   .accuracy-val.poor { color: #ef4444; }
+
+  /* Darker variants on the light card — the bright greens/yellows above
+     fall below 4.5:1 on white. */
+  :global(:root.light) .accuracy-val.excellent { color: #15803d; }
+  :global(:root.light) .accuracy-val.fair { color: #a16207; }
 
   .accuracy-divider {
     width: 1px;

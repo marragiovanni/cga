@@ -155,6 +155,10 @@
     transform: translateY(-1px);
   }
 
+  :global(:root.light) #nav button:hover {
+    background: rgba(0, 0, 0, 0.05);
+  }
+
   #nav button:active {
     transform: translateY(0);
   }

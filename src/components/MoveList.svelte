@@ -272,6 +272,10 @@
     background: var(--panel);
   }
 
+  :global(:root.light) #movelist {
+    scrollbar-color: #c4c4cc transparent;
+  }
+
   .move-table {
     display: flex;
     flex-direction: column;
@@ -294,6 +298,14 @@
 
   .move-row:hover {
     background: rgba(255, 255, 255, 0.05);
+  }
+
+  :global(:root.light) .move-row:nth-child(even) {
+    background: rgba(0, 0, 0, 0.025);
+  }
+
+  :global(:root.light) .move-row:hover {
+    background: rgba(0, 0, 0, 0.04);
   }
 
   .move-no {
@@ -329,7 +341,11 @@
 
   .ply:hover {
     background: rgba(255, 255, 255, 0.09);
-    color: #fff;
+    color: var(--fg-strong);
+  }
+
+  :global(:root.light) .ply:hover {
+    background: rgba(0, 0, 0, 0.06);
   }
 
   .ply.active {
@@ -385,18 +401,22 @@
   .var-no {
     font-size: 0.75rem;
     padding-right: 0.1rem;
-    color: #7b7c88;
+    color: var(--muted);
   }
 
   .ply.var {
-    color: #a4a5b2;
+    color: var(--muted);
     padding: 0.12rem 0.35rem;
     font-size: 0.82rem;
   }
 
   .ply.var:hover {
     background: rgba(255, 255, 255, 0.08);
-    color: #fff;
+    color: var(--fg-strong);
+  }
+
+  :global(:root.light) .ply.var:hover {
+    background: rgba(0, 0, 0, 0.06);
   }
 
   .ply.var.active {
