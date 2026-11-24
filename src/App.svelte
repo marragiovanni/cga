@@ -122,6 +122,11 @@
   let eloWhite = $state<number | null>(1500);
   let eloBlack = $state<number | null>(1500);
   let mobileImportOpen = $state(false);
+  /** True when the game on screen came from an imported PGN. Player
+   *  accuracy is only meaningful then: when the board is just being
+   *  explored (no PGN), moves still get engine labels but there is no
+   *  "player" to score, so accuracy is neither computed nor shown. */
+  let pgnSource = $state(false);
 
   /** Which side sits at the bottom of the board (flip to analyze from
    *  the other player's point of view, e.g. as Black). Session-only. */
@@ -181,13 +186,15 @@
     if (cpLosses.w.length === 0 && cpLosses.b.length === 0) return null;
     return {
       moves,
-      whiteAccuracy: gameAccuracy(cpLosses.w),
-      blackAccuracy: gameAccuracy(cpLosses.b),
+      // No player to score when the game is just being explored.
+      whiteAccuracy: pgnSource ? gameAccuracy(cpLosses.w) : 0,
+      blackAccuracy: pgnSource ? gameAccuracy(cpLosses.b) : 0,
     };
   });
 
   /** " · White 87% · Black 92%" once classified, "" otherwise. */
   const accuracySuffix = (): string => {
+    if (!pgnSource) return "";
     const cls = classification;
     if (!cls) return "";
     return (
@@ -349,6 +356,7 @@
       return;
     }
     if (!game || !tree) {
+      pgnSource = false;
       game = {
         tags: {
           Event: "Interactive Analysis",
@@ -461,6 +469,7 @@
   };
 
   const startGame = (parsed: GameData): void => {
+    pgnSource = true;
     game = parsed;
     // Seed the ELO inputs from the PGN's WhiteElo/BlackElo tags when
     // the game carries them — no manual retyping. A game without the
@@ -497,6 +506,7 @@
     livePending = 0;
 
     if (value.trim() === "") {
+      pgnSource = false;
       game = null;
       tree = null;
       path = [];
@@ -684,8 +694,8 @@
     {statusIsError}
     statusIsIdle={statusText === IDLE_STATUS}
     mobileOpen={mobileImportOpen}
-    whiteAccuracy={classification?.whiteAccuracy ?? null}
-    blackAccuracy={classification?.blackAccuracy ?? null}
+    whiteAccuracy={pgnSource ? (classification?.whiteAccuracy ?? null) : null}
+    blackAccuracy={pgnSource ? (classification?.blackAccuracy ?? null) : null}
     onPgnInput={onPgnInput}
     onAnalyze={() => {
       const startsAnalysis = !analysisRunning;

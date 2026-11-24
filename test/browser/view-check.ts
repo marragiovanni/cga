@@ -396,6 +396,31 @@ async function check(): Promise<void> {
     try { localStorage.setItem("cma-theme", "dark"); } catch { /* quota */ }
   }
 
+  // 14. No PGN → free exploration: moves still get labels, but there is
+  // no player to score, so the accuracy card must stay hidden.
+  const pgnEl = document.getElementById("pgn") as HTMLTextAreaElement | null;
+  if (!pgnEl) throw new Error("missing #pgn");
+  pgnEl.value = "";
+  pgnEl.dispatchEvent(new Event("input", { bubbles: true }));
+  await sleep(DEBOUNCE_WAIT);
+  clickSquare("e2");
+  clickSquare("e4");
+  await sleep(150);
+  const noPgnLabel = document.querySelector("#board-cell .move-name")?.textContent ?? "";
+  expect(
+    noPgnLabel.includes("e4"),
+    `no PGN: played move still gets a label ("${noPgnLabel}")`,
+  );
+  expect(
+    document.querySelector(".accuracy-card") === null,
+    "no PGN: player accuracy card is hidden",
+  );
+  const noPgnStatus = document.getElementById("status")?.textContent ?? "";
+  expect(
+    !noPgnStatus.includes("%"),
+    `no PGN: status carries no accuracy percentages ("${noPgnStatus}")`,
+  );
+
   if (failures.length === 0) {
     log(`\nPASS — ${passed} assertions, game reconstruction UI verified`);
   } else {
