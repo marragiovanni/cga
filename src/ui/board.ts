@@ -178,6 +178,9 @@ export function initBoard(root: HTMLElement, handlers: BoardHandlers = {}): Boar
     highlight: { lastMove: true, check: true },
     drawable: { enabled: false, visible: true },
     coordinates: true,
+    // Keep touch gestures on the board from scrolling the page (a swipe
+    // that starts on an empty square would otherwise pan the view).
+    blockTouchScroll: true,
     // Automated checks drive the board with synthetic pointer events;
     // for a local, offline tool this only widens what can move pieces.
     trustAllEvents: true,

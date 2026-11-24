@@ -149,12 +149,23 @@
 
   let listEl = $state<HTMLElement | null>(null);
 
-  // Auto-scroll the active move into view
+  // Auto-scroll the active move inside the list only. `scrollIntoView()`
+  // also scrolls ancestor scrollers — on mobile that means the page,
+  // which yanks the board out of view when a move is played.
   $effect(() => {
     void props.cursor;
     void turnRows;
     if (!listEl) return;
-    listEl.querySelector(".ply.active")?.scrollIntoView({ block: "nearest" });
+    const active = listEl.querySelector<HTMLElement>(".ply.active");
+    if (!active) return;
+    const listRect = listEl.getBoundingClientRect();
+    const itemRect = active.getBoundingClientRect();
+    const pad = 4;
+    if (itemRect.top < listRect.top + pad) {
+      listEl.scrollTop -= listRect.top + pad - itemRect.top;
+    } else if (itemRect.bottom > listRect.bottom - pad) {
+      listEl.scrollTop += itemRect.bottom - (listRect.bottom - pad);
+    }
   });
 </script>
 

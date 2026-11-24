@@ -111,6 +111,37 @@ function press(key: string): void {
   document.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true }));
 }
 
+/** Play a move the way a user would: click the origin, click the target. */
+function clickSquare(key: string): void {
+  const boardEl = document.querySelector<HTMLElement>("#board cg-board, #board .cg-board");
+  if (!boardEl) throw new Error("missing #board cg-board");
+  const rect = boardEl.getBoundingClientRect();
+  const file = key.charCodeAt(0) - 97;
+  const rank = Number(key[1]);
+  const x = rect.left + (rect.width * (file + 0.5)) / 8;
+  const y = rect.top + (rect.height * (8 - rank + 0.5)) / 8;
+  boardEl.dispatchEvent(
+    new MouseEvent("mousedown", {
+      bubbles: true,
+      cancelable: true,
+      button: 0,
+      buttons: 1,
+      clientX: x,
+      clientY: y,
+    }),
+  );
+  document.dispatchEvent(
+    new MouseEvent("mouseup", {
+      bubbles: true,
+      cancelable: true,
+      button: 0,
+      buttons: 0,
+      clientX: x,
+      clientY: y,
+    }),
+  );
+}
+
 async function pastePgn(pgn: string): Promise<void> {
   const pgnEl = document.getElementById("pgn") as HTMLTextAreaElement | null;
   if (!pgnEl) throw new Error("missing #pgn");
@@ -174,6 +205,21 @@ async function check(): Promise<void> {
     expect(
       Math.abs(window.scrollY - scrollBeforeNavigation) <= 1,
       "mobile navigation preserves the page scroll position",
+    );
+    (document.getElementById("nav-first") as HTMLButtonElement | null)?.click();
+    await sleep(50);
+
+    // A board move must not scroll the page: the move list scrolls
+    // itself, and on mobile it is not a scroll container at all.
+    window.scrollTo(0, 0);
+    await sleep(50);
+    clickSquare("e2");
+    clickSquare("e4");
+    await sleep(100);
+    expect(window.scrollY <= 1, "board move preserves the page scroll position");
+    expect(
+      document.querySelector('#movelist .ply[data-ply="1"]')?.classList.contains("active") === true,
+      "board move activates the played ply",
     );
     (document.getElementById("nav-first") as HTMLButtonElement | null)?.click();
     await sleep(50);
