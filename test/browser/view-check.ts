@@ -124,10 +124,7 @@ async function check(): Promise<void> {
   const last = game.moves.length; // 33
 
   // 1. Initial state: no game yet.
-  expect(
-    (document.getElementById("status")?.textContent ?? "").includes("paste a PGN"),
-    "initial status asks for a PGN",
-  );
+  expect(document.getElementById("status") === null, "initial idle status is hidden");
   expect(document.querySelectorAll("#movelist .ply").length === 0, "initial move list is empty");
 
   // 2. Paste the Opera Game (debounced live parse).

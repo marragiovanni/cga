@@ -241,7 +241,6 @@
     height: 100%;
     width: 50%;
     background: linear-gradient(180deg, #ffffff 0%, #e7e7ec 60%, #d3d3da 100%);
-    border-radius: 999px;
     box-shadow: inset 0 -1px 2px rgba(0, 0, 0, 0.15), 0 0 10px rgba(255, 255, 255, 0.25);
     transition: width 0.45s cubic-bezier(0.22, 1, 0.36, 1);
   }

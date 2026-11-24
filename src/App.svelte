@@ -52,6 +52,7 @@
   import { createAnalysisController } from "./ui/analysis.ts";
   import { openEvalStore } from "./ui/evalcache.ts";
   import { formatScore } from "./ui/score.ts";
+  import { Moon, Sun } from "@lucide/svelte";
   import labels from "./config/labels.json" with { type: "json" };
   import BoardCell from "./components/BoardCell.svelte";
   import InputsPanel from "./components/InputsPanel.svelte";
@@ -612,7 +613,11 @@
     onclick={toggleTheme}
     aria-label="Toggle theme"
   >
-    {darkMode ? "☀️" : "🌙"}
+    {#if darkMode}
+      <Sun size={18} aria-hidden="true" />
+    {:else}
+      <Moon size={18} aria-hidden="true" />
+    {/if}
   </button>
 </header>
 

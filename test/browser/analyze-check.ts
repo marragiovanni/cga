@@ -169,7 +169,7 @@ async function check(): Promise<void> {
 
   // ---------------------------------------------------- A. pre-analysis
   log("— phase A: parsed, not yet analyzed —");
-  expect(statusText().includes("paste a PGN"), "initial status asks for a PGN");
+  expect(document.getElementById("status") === null, "initial idle status is hidden");
 
   await pastePgn(OPERA_PGN);
   expect(

@@ -1,6 +1,8 @@
 <script lang="ts">
   /** Inputs — PGN textarea, ELO fields, analyze button, progress bar,
    *  match accuracy card, and status line. */
+  import { ClipboardPaste, Play, Square } from "@lucide/svelte";
+
   interface Props {
     pgn?: string;
     eloWhite?: number | null;
@@ -45,7 +47,7 @@
 <section id="inputs" class="panel">
   <div class="panel-header">
     <label class="field-label" for="pgn">
-      <span class="label-icon" aria-hidden="true">📋</span>
+      <span class="label-icon" aria-hidden="true"><ClipboardPaste size={15} strokeWidth={2} /></span>
       PGN Game Import
     </label>
   </div>
@@ -70,9 +72,9 @@
 
   <button id="analyze-btn" type="button" class:cancel={running} onclick={onAnalyze}>
     {#if running}
-      <span class="btn-icon" aria-hidden="true">⏹</span> Cancel…
+      <span class="btn-icon" aria-hidden="true"><Square size={14} fill="currentColor" /></span> Cancel…
     {:else}
-      <span class="btn-icon" aria-hidden="true">▶</span> Analyze
+      <span class="btn-icon" aria-hidden="true"><Play size={15} fill="currentColor" /></span> Analyze
     {/if}
   </button>
 
@@ -99,7 +101,9 @@
     </div>
   {/if}
 
-  <p id="status" class:idle={statusIsIdle} class:error={statusIsError}>{statusText}</p>
+  {#if !statusIsIdle}
+    <p id="status" class:error={statusIsError}>{statusText}</p>
+  {/if}
 </section>
 
 <style>
@@ -132,7 +136,7 @@
   }
 
   .label-icon {
-    font-size: 0.85rem;
+    display: inline-flex;
   }
 
   .elo-row {
@@ -202,7 +206,7 @@
   }
 
   .btn-icon {
-    font-size: 0.85rem;
+    display: inline-flex;
   }
 
   #progress {
@@ -311,11 +315,6 @@
 
   :global(:root.light) #status {
     border-top-color: rgba(0, 0, 0, 0.06);
-  }
-
-  #status.idle {
-    color: var(--muted);
-    font-style: italic;
   }
 
   #status.error {

@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "@lichess-org/chessground": "^10.1.1",
+    "@lucide/svelte": "^1.79.0",
     "chess.js": "^1.4.0",
     "stockfish": "^19.0.1"
   }

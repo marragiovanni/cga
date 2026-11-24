@@ -7,6 +7,19 @@
    *
    * Preserves `#move-label` text and hidden state for test suite assertions.
    */
+  import {
+    BadgeAlert,
+    BookOpen,
+    CircleCheck,
+    CircleX,
+    Lightbulb,
+    LoaderCircle,
+    OctagonAlert,
+    Star,
+    ThumbsUp,
+    TriangleAlert,
+  } from "@lucide/svelte";
+
   interface Props {
     label: string | null;
     pending: boolean;
@@ -17,16 +30,6 @@
   }
 
   let { label, pending, san = null, moveNo = null, isWhite = true, cpLoss = null }: Props = $props();
-
-  const ICONS: Record<string, string> = {
-    book: "📖",
-    best: "⭐",
-    good: "👍",
-    acceptable: "🆗",
-    inaccuracy: "⚠️",
-    mistake: "❓",
-    blunder: "💥",
-  };
 
   const DESCRIPTIONS: Record<string, string> = {
     book: "Classical opening theory",
@@ -53,7 +56,7 @@
 <div class="move-eval-slot">
   {#if pending}
     <div class="eval-card pending">
-      <span class="spinner" aria-hidden="true">⏳</span>
+      <span class="spinner" aria-hidden="true"><LoaderCircle size={21} /></span>
       <div class="card-content">
         <div class="card-header">
           {#if movePrefix}<span class="move-name">{movePrefix}</span>{/if}
@@ -65,7 +68,23 @@
   {:else if label}
     <div class="eval-card {label}">
       <div class="badge-icon" aria-hidden="true">
-        {ICONS[label] ?? "♟"}
+        {#if label === "book"}
+          <BookOpen />
+        {:else if label === "best"}
+          <Star fill="currentColor" />
+        {:else if label === "good"}
+          <ThumbsUp />
+        {:else if label === "acceptable"}
+          <CircleCheck />
+        {:else if label === "inaccuracy"}
+          <TriangleAlert />
+        {:else if label === "mistake"}
+          <BadgeAlert />
+        {:else if label === "blunder"}
+          <OctagonAlert />
+        {:else}
+          <CircleX />
+        {/if}
       </div>
       <div class="card-content">
         <div class="card-header">
@@ -88,7 +107,7 @@
     </div>
   {:else}
     <div class="eval-card idle">
-      <span class="idle-icon" aria-hidden="true">💡</span>
+      <span class="idle-icon" aria-hidden="true"><Lightbulb size={18} /></span>
       <span class="idle-text">
         {movePrefix ? `${movePrefix} — Click Analyze for evaluation` : "Play or navigate moves to analyze"}
       </span>
@@ -119,8 +138,6 @@
   }
 
   .badge-icon {
-    font-size: 1.45rem;
-    line-height: 1;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -128,6 +145,12 @@
     height: 2.2rem;
     border-radius: 8px;
     background: rgba(255, 255, 255, 0.05);
+  }
+
+  .badge-icon :global(svg) {
+    width: 1.35rem;
+    height: 1.35rem;
+    stroke-width: 2;
   }
 
   .card-content {
@@ -274,7 +297,8 @@
   }
 
   .spinner {
-    font-size: 1.3rem;
+    display: flex;
+    color: var(--accent);
     animation: spin 2s linear infinite;
   }
 
@@ -293,7 +317,7 @@
   }
 
   .idle-icon {
-    font-size: 1.1rem;
+    display: flex;
     opacity: 0.7;
   }
 
