@@ -201,7 +201,7 @@ function activePly(): string | null {
 const moveLabelText = (): string => $("move-label").textContent ?? "";
 const moveLabelHidden = (): boolean => $("move-label").hidden !== false;
 
-/** Green best-move arrow lines currently drawn on the board. */
+/** Best-move arrow lines currently drawn on the board. */
 function arrowLines(): SVGLineElement[] {
   return [...document.querySelectorAll<SVGLineElement>("#board svg.cg-shapes line")];
 }
@@ -341,7 +341,10 @@ async function check(): Promise<void> {
   expect(squareKeys("last-move").join(",") === "h2,h3", "board shows 2.h3");
   // The position after the fork WAS searched: the sidebar has evals.
   expect($("best-move").textContent !== "–", `searched fork shows a best move (got "${$("best-move").textContent}")`);
-  expect(arrowLines().length === 1, `best-move arrow drawn for the searched fork (got ${arrowLines().length})`);
+  expect(
+    arrowLines().length >= 1 && arrowLines().length <= 2,
+    `best-move arrows drawn for the searched fork (got ${arrowLines().length})`,
+  );
 
   // -------------------------------- E. Analyze on the viewed path
   log("— phase E: Analyze runs on the viewed (variation) path —");

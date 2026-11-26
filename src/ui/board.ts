@@ -20,6 +20,7 @@
 import { Chess } from "chess.js";
 import { Chessground } from "@lichess-org/chessground";
 import type { Api } from "@lichess-org/chessground/api";
+import type { DrawShape } from "@lichess-org/chessground/draw";
 import type { Key } from "@lichess-org/chessground/types";
 
 import type { PositionView } from "../chess/game.ts";
@@ -27,9 +28,10 @@ import type { PositionView } from "../chess/game.ts";
 export interface BoardApi {
   /** Show a position; chessground animates the transition. */
   setPosition(position: PositionView): void;
-  /** Draw (or clear, with null) the engine's best-move arrow. Survives
-   *  subsequent setPosition calls — the FEN update resets shapes. */
-  setArrow(uci: string | null): void;
+  /** Draw (or clear, with an empty array) the engine's move arrows,
+   *  best first. Survives subsequent setPosition calls — the FEN update
+   *  resets shapes. */
+  setArrows(ucis: string[]): void;
   /** Piece-placement FEN currently displayed (for tests). */
   fen(): string;
   /** Freeze/unfreeze piece movement (analysis run in progress). */
@@ -86,21 +88,25 @@ const PROMOTION_ROLES: [string, string][] = [
 ];
 
 export function initBoard(root: HTMLElement, handlers: BoardHandlers = {}): BoardApi {
-  let arrow: string | null = null;
+  let arrows: string[] = [];
   let currentView: PositionView | null = null;
   let locked = false;
   let orientation: "white" | "black" = "white";
   let pending: { orig: Key; dest: Key } | null = null;
   let promotionEl: HTMLElement | null = null;
 
-  const applyArrow = (): void => {
-    const uci = arrow;
-    const drawable = uci !== null && uci !== "(none)" && uci.length >= 4;
-    api.setShapes(
-      drawable
-        ? [{ brush: "green", orig: uci.slice(0, 2) as Key, dest: uci.slice(2, 4) as Key }]
-        : [],
-    );
+  const applyArrows = (): void => {
+    const shapes: DrawShape[] = [];
+    for (const [index, uci] of arrows.entries()) {
+      if (uci === "(none)" || uci.length < 4) continue;
+      shapes.push({
+        brush: index === 0 ? "green" : "paleGreen",
+        orig: uci.slice(0, 2) as Key,
+        dest: uci.slice(2, 4) as Key,
+        ...(index === 0 ? {} : { modifiers: { lineWidth: 8 } }),
+      });
+    }
+    api.setShapes(shapes);
   };
 
   const removePromotion = (): void => {
@@ -205,7 +211,7 @@ export function initBoard(root: HTMLElement, handlers: BoardHandlers = {}): Boar
         dests: legalDests(position.fen),
       },
     });
-    applyArrow(); // passing a FEN resets chessground's shapes
+    applyArrows(); // passing a FEN resets chessground's shapes
   }
 
   return {
@@ -213,9 +219,9 @@ export function initBoard(root: HTMLElement, handlers: BoardHandlers = {}): Boar
       removePromotion(); // navigating away discards a pending choice
       syncPosition(position);
     },
-    setArrow(uci): void {
-      arrow = uci;
-      applyArrow();
+    setArrows(ucis): void {
+      arrows = ucis;
+      applyArrows();
     },
     fen: () => api.getFen(),
     setLocked(next): void {

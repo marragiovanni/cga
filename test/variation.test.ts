@@ -6,11 +6,13 @@ import {
   extendToLeaf,
   gameLine,
   isMainPath,
+  isPrimaryPath,
   mainPath,
   pathFromRoot,
   pathPositionAt,
   pathPositions,
   playMove,
+  primaryPath,
   treeFromGame,
 } from "../src/chess/variation.ts";
 
@@ -299,4 +301,31 @@ test("gameLine: moves played straight on past the game's end extend it", () => {
     "the user's continuation is part of the game line",
   );
   assert.equal(line.at(-1)!.main, false, "even though it is not a PGN node");
+});
+
+test("no PGN: the primary line is the first-child chain", () => {
+  const tree = treeFromGame({ ...loadPgn(OPERA_PGN), moves: [] });
+  const e4 = playMove(tree.root, "e2e4")!;
+  const e5 = playMove(e4, "e7e5")!;
+  const nf3 = playMove(e5, "g1f3")!;
+  const bc4 = playMove(e5, "f1c4")!;
+
+  assert.equal(e4.main, false, "interactive moves are not PGN moves");
+  assert.deepEqual(primaryPath(tree).map((n) => n.move.san), ["e4", "e5", "Nf3"]);
+  assert.deepEqual(gameLine(tree).map((n) => n.move.san), ["e4", "e5", "Nf3"]);
+  assert.equal(isPrimaryPath([e4, e5, nf3]), true, "first-child chain is primary");
+  assert.equal(isPrimaryPath([e4, e5, bc4]), false, "the fork is a variation");
+  assert.equal(e5.children[0], nf3, "the original continuation stays first");
+});
+
+test("primaryPath ignores a multi-level variation branch", () => {
+  const tree = treeFromGame(loadPgn(OPERA_PGN));
+  const main = primaryPath(tree);
+  const fork = playMove(main[1]!, "b1c3")!;
+  const deeper = playMove(fork, "g8f6")!;
+  const leaf = playMove(deeper, "g1f3")!;
+
+  assert.deepEqual(primaryPath(tree).map((n) => n.move.san), main.map((n) => n.move.san));
+  assert.equal(isPrimaryPath([fork, deeper, leaf]), false, "a nested variation is not primary");
+  assert.equal(isPrimaryPath([main[0]!, main[1]!, main[2]!]), true);
 });

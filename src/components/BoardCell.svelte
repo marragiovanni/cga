@@ -12,7 +12,8 @@
     position: PositionView;
     /** Bumped to force a re-application of `position` (snap-back). */
     nonce?: number;
-    arrow: string | null;
+    /** UCI moves to draw, best first (0, 1 or 2 arrows). */
+    arrows: string[];
     locked: boolean;
     /** Classifier label of the move on the board (null = none yet). */
     moveLabel: string | null;
@@ -36,7 +37,7 @@
   let {
     position,
     nonce = 0,
-    arrow,
+    arrows,
     locked,
     moveLabel,
     labelPending,
@@ -61,13 +62,13 @@
     board = initBoard(boardEl, { onMove });
   });
 
-  // Position + arrow in ONE effect: every application ends with the
-  // current arrow, so no stale arrow can survive a navigation
+  // Position + arrows in ONE effect: every application ends with the
+  // current arrows, so no stale arrow can survive a navigation
   $effect(() => {
     void nonce;
     if (!board) return;
     board.setPosition(position);
-    board.setArrow(arrow);
+    board.setArrows(arrows);
   });
 
   $effect(() => {

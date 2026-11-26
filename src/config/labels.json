@@ -25,5 +25,9 @@
   },
   "accuracy": {
     "k": 0.004
+  },
+  "arrows": {
+    "maxWinProbGap": 0.03,
+    "maxCpGap": 50
   }
 }

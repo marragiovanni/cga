@@ -29,6 +29,7 @@
   } from "./chess/game.ts";
   import {
     isMainPath,
+    isPrimaryPath,
     mainPath,
     extendToLeaf,
     gameLine,
@@ -52,6 +53,7 @@
   import { createAnalysisController } from "./ui/analysis.ts";
   import { openEvalStore } from "./ui/evalcache.ts";
   import { formatScore } from "./ui/score.ts";
+  import { pickArrows } from "./ui/arrows.ts";
   import { Import, Moon, Sun } from "@lucide/svelte";
   import labels from "./config/labels.json" with { type: "json" };
   import BoardCell from "./components/BoardCell.svelte";
@@ -267,7 +269,7 @@
   const evalCp = $derived(
     here && position ? toWhiteRelative(resultToCp(here.result), position.fen) : null,
   );
-  const arrow = $derived(here ? here.result.bestMove : null);
+  const arrows = $derived(here ? pickArrows(here) : []);
 
   // --------------------------------------------------------- handlers
 
@@ -281,11 +283,11 @@
     const target = Math.max(0, Math.min(next, path.length));
     if (target < cursor && tree) {
       const undone = path[cursor - 1];
-      const shown = target > 0 ? path[target - 1] : null;
-      if (undone && !undone.main && (shown === null || shown.main)) {
-        // The move being undone is an alternative and we land on the
-        // main line (or the start): re-slice onto the game's line.
-        path = target === 0 ? gameLine(tree) : extendToLeaf(path.slice(0, target));
+      const shownPath = path.slice(0, target);
+      if (undone && !isPrimaryPath(path.slice(0, cursor)) && isPrimaryPath(shownPath)) {
+        // The move being undone leaves the primary line and we land on
+        // it (or the start): re-slice onto the game's line.
+        path = target === 0 ? gameLine(tree) : extendToLeaf(shownPath);
       }
     }
     cursor = target;
@@ -302,10 +304,10 @@
   const jumpTo = (node: VariationNode): void => {
     const index = path.indexOf(node);
     if (index >= 0) {
-      // Clicking a main-line move while a variation is viewed re-joins
+      // Clicking a primary-line move while a variation is viewed re-joins
       // the main line (the variation stays a branch), so navigation
-      // continues along the real game from here.
-      if (node.main && path[index + 1] && !path[index + 1].main) {
+      // continues along the displayed line from here.
+      if (isPrimaryPath(path.slice(0, index + 1)) && path[index + 1] && !isPrimaryPath(path.slice(0, index + 2))) {
         path = extendToLeaf(path.slice(0, index + 1));
         cursor = index + 1;
         if (!analysisRunning && livePending === 0) setStatus(statusForView());
@@ -711,7 +713,7 @@
   <BoardCell
     {position}
     nonce={boardNonce}
-    {arrow}
+    {arrows}
     locked={analysisRunning}
     moveLabel={moveLabel?.label ?? null}
     labelPending={livePending > 0 && shownNode !== null}

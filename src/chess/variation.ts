@@ -72,6 +72,21 @@ export function mainPath(tree: VariationTree): VariationNode[] {
   return path;
 }
 
+/**
+ * The tree's structural main line: follow the first child at every
+ * level. This is the line the move list shows, whether it came from a
+ * PGN or was played interactively — no PGN is required.
+ */
+export function primaryPath(tree: VariationTree): VariationNode[] {
+  const path: VariationNode[] = [];
+  let node = tree.root;
+  while (node.children.length > 0) {
+    node = node.children[0]!;
+    path.push(node);
+  }
+  return path;
+}
+
 /** Root→node chain, ordered first move → node (the root itself excluded). */
 export function pathFromRoot(node: VariationNode | null): VariationNode[] {
   const path: VariationNode[] = [];
@@ -129,18 +144,24 @@ export function isMainPath(path: readonly VariationNode[]): boolean {
   return path.every((n) => n.main);
 }
 
+/** True when every node is its parent's first child (the displayed
+ *  primary line). An empty path is trivially primary. */
+export function isPrimaryPath(path: readonly VariationNode[]): boolean {
+  return path.every((node) => node.parent?.children[0] === node);
+}
+
 /**
- * The game's line as the move list displays it: the PGN main chain,
- * extended along first children — which picks up moves the user played
- * straight on from the game's end (they extend the line) but never the
- * alternatives forked mid-game (they are siblings, appended later).
+ * The game's line as the move list displays it: the tree's structural
+ * main line (first child at every level). User moves played straight on
+ * from the game's end extend it; alternatives forked mid-game are
+ * siblings and never leak into it.
  *
- * This is deliberately independent of the viewed path: the imported
- * game is always the primary line, and alternatives
- * render as branches off it no matter what the board is showing.
+ * This is deliberately independent of the viewed path: the primary line
+ * stays put, and alternatives render as branches off it no matter what
+ * the board is showing.
  */
 export function gameLine(tree: VariationTree): VariationNode[] {
-  return extendToLeaf(mainPath(tree));
+  return primaryPath(tree);
 }
 
 /**
@@ -172,7 +193,7 @@ export function playMove(parent: VariationNode, uci: string): VariationNode | nu
       fenBefore: played.before,
       fenAfter: played.after,
     },
-    main: parent.children.length === 0,
+    main: false, // user moves never belong to the imported PGN's main line
     parent,
     children: [],
   };

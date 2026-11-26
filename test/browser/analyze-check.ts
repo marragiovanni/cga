@@ -103,7 +103,7 @@ function allLabels(): (string | null)[] {
   return game.moves.map((_, i) => labelAt(i + 1));
 }
 
-/** Green best-move arrow lines currently drawn on the board. */
+/** Best-move arrow lines currently drawn on the board. */
 function arrowLines(): SVGLineElement[] {
   return [...document.querySelectorAll<SVGLineElement>("#board svg.cg-shapes line")];
 }
@@ -295,11 +295,20 @@ async function check(): Promise<void> {
   expect(scoreRe.test($("score").textContent ?? ""), `ply 7 score formatted (got "${$("score").textContent}")`);
   expect($("pv").textContent !== "–", `ply 7 continuation shown (got "${$("pv").textContent}")`);
   let arrows = arrowLines();
-  expect(arrows.length === 1, `one best-move arrow at ply 7 (got ${arrows.length})`);
+  expect(
+    arrows.length >= 1 && arrows.length <= 2,
+    `one or two best-move arrows at ply 7 (got ${arrows.length})`,
+  );
   expect(
     (arrows[0]?.getAttribute("marker-end") ?? "").includes("arrowhead-g"),
-    `arrow uses the green brush (got "${arrows[0]?.getAttribute("marker-end")}")`,
+    `first arrow uses the green brush (got "${arrows[0]?.getAttribute("marker-end")}")`,
   );
+  if (arrows.length === 2) {
+    expect(
+      (arrows[1]?.getAttribute("marker-end") ?? "").includes("arrowhead-pg"),
+      `second arrow uses the pale green brush (got "${arrows[1]?.getAttribute("marker-end")}")`,
+    );
+  }
 
   // Checkmate: no legal move, so the synthesized "(none)" must clear the UI.
   await goto(last);
@@ -309,7 +318,10 @@ async function check(): Promise<void> {
   expect(arrowLines().length === 0, "arrow cleared at the mate position");
 
   await goto(7);
-  expect(arrowLines().length === 1, "arrow restored when navigating back to ply 7");
+  expect(
+    arrowLines().length >= 1 && arrowLines().length <= 2,
+    "arrows restored when navigating back to ply 7",
+  );
 
   // ------------------------------------------------ F. ELO re-classification
   log("— phase F: ELO change re-classifies without the engine —");
